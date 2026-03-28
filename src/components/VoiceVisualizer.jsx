@@ -13,9 +13,9 @@ const ParticleSphere = ({ status, volume = 0 }) => {
             const phi = Math.acos(-1 + (2 * i) / count);
             const theta = Math.sqrt(count * Math.PI) * phi;
 
-            pos[i * 3] = 0.8 * Math.cos(theta) * Math.sin(phi);
-            pos[i * 3 + 1] = 0.8 * Math.sin(theta) * Math.sin(phi);
-            pos[i * 3 + 2] = 0.8 * Math.cos(phi);
+            pos[i * 3] = 0.5 * Math.cos(theta) * Math.sin(phi);
+            pos[i * 3 + 1] = 0.5 * Math.sin(theta) * Math.sin(phi);
+            pos[i * 3 + 2] = 0.5 * Math.cos(phi);
         }
         return [pos, new Float32Array(pos)];
     }, []);
@@ -35,15 +35,16 @@ const ParticleSphere = ({ status, volume = 0 }) => {
             const z = initialPositions[iz];
 
             if (status === 'recording') {
-                // Use the volume (0-1) from the microphone
-                // We multiply by 1.2 to make the "surge" visible, but you can tune this
+                // We amplify the volume for the physical surge
                 const micBoost = volume * 1.5;
 
-                // YOUR ORIGINAL MATH:
+                // Your original Jitter Math
                 const noise = Math.sin(x * 2 + time * 5) * Math.cos(y * 2 + time * 5) * 0.1;
 
-                // The base sphere (1.0) + mic input (micBoost) + your jitter (noise)
-                const pulse = 1 + micBoost + noise;
+                // High-volume "Burst": If volume is high, we add a tiny bit extra surge
+                const burst = volume > 0.5 ? volume * 0.2 : 0;
+
+                const pulse = 1 + micBoost + noise + burst;
 
                 posAttr.array[ix] = x * pulse;
                 posAttr.array[iy] = y * pulse;
@@ -86,12 +87,14 @@ const ParticleSphere = ({ status, volume = 0 }) => {
                 />
             </bufferGeometry>
             <pointsMaterial
-                size={0.025}
+                // Grow the dots slightly when speaking (from 0.02 to 0.04 max)
+                size={0.02 + (status === 'recording' ? volume * 0.03 : 0)}
                 color={sphereColor}
                 transparent
-                opacity={0.7}
+                // Make dots more solid/bright based on volume
+                opacity={status === 'recording' ? 0.6 + (volume * 0.4) : 0.7}
                 sizeAttenuation
-                blending={THREE.AdditiveBlending} // Makes dots "glow" when overlapping
+                blending={THREE.AdditiveBlending}
             />
         </points>
     );
@@ -121,53 +124,63 @@ const ParticleSphere = ({ status, volume = 0 }) => {
 
 
 const VoiceVisualizer = ({ status }) => {
-    const [audioVolume, setAudioVolume] = React.useState(0);
-    const analyserRef = React.useRef(null);
-    const animationRef = React.useRef(null);
+  const [volume, setVolume] = React.useState(0);
+  const analyserRef = React.useRef(null);
+  const animationRef = React.useRef(null);
 
-    React.useEffect(() => {
-        if (status === 'recording') {
-            let audioCtx;
-            navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const source = audioCtx.createMediaStreamSource(stream);
-                const analyser = audioCtx.createAnalyser();
+  React.useEffect(() => {
+    if (status === 'recording') {
+      let audioCtx;
+      navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const source = audioCtx.createMediaStreamSource(stream);
+        const analyser = audioCtx.createAnalyser();
+        analyser.smoothingTimeConstant = 0.7; // Smooths the blob/aura movement
+        analyser.fftSize = 256;
+        source.connect(analyser);
+        analyserRef.current = analyser;
+        const dataArray = new Uint8Array(analyser.frequencyBinCount);
 
-                // This makes the movement "smooth" instead of "shaky"
-                analyser.smoothingTimeConstant = 0.7;
-                analyser.fftSize = 256;
-                source.connect(analyser);
+        const update = () => {
+          analyser.getByteFrequencyData(dataArray);
+          const avg = dataArray.reduce((a, b) => a + b) / dataArray.length;
+          setVolume(avg / 255); // Values between 0 and 1
+          animationRef.current = requestAnimationFrame(update);
+        };
+        update();
+      });
+      return () => {
+        if (audioCtx) audioCtx.close();
+        cancelAnimationFrame(animationRef.current);
+      };
+    } else {
+      setVolume(0);
+    }
+  }, [status]);
 
-                analyserRef.current = analyser;
-                const dataArray = new Uint8Array(analyser.frequencyBinCount);
+  return (
+    <div className="relative w-full h-96 flex justify-center items-center overflow-hidden">
+      {/* STEP 3: THE AURA GLOW - Moves with your voice */}
+      {status === 'recording' && (
+        <div 
+          className="absolute w-48 h-48 rounded-full blur-[100px] transition-all duration-75 ease-out"
+          style={{ 
+            backgroundColor: '#10B981', 
+            opacity: 0.1 + (volume * 0.4), 
+            transform: `scale(${1 + volume * 0.7})`,
+            zIndex: 0
+          }} 
+        />
+      )}
 
-                const update = () => {
-                    analyser.getByteFrequencyData(dataArray);
-                    // Get the average volume (0-255) and normalize to 0-1
-                    const avg = dataArray.reduce((a, b) => a + b) / dataArray.length;
-                    setAudioVolume(avg / 255);
-                    animationRef.current = requestAnimationFrame(update);
-                };
-                update();
-            });
-
-            return () => {
-                if (audioCtx) audioCtx.close();
-                cancelAnimationFrame(animationRef.current);
-            };
-        } else {
-            setAudioVolume(0);
-        }
-    }, [status]);
-
-    return (
-        <div className="w-full h-80 flex justify-center items-center overflow-hidden">
-            <Canvas camera={{ position: [0, 0, 3], fov: 45 }}>
-                {/* Pass the real audioVolume to the sphere */}
-                <ParticleSphere status={status} volume={audioVolume} />
-            </Canvas>
-        </div>
-    );
+      {/* THE SPHERE */}
+      <div className="relative z-10 w-full h-full">
+        <Canvas camera={{ position: [0, 0, 3], fov: 45 }}>
+          <ParticleSphere status={status} volume={volume} />
+        </Canvas>
+      </div>
+    </div>
+  );
 };
 
 export default VoiceVisualizer;
