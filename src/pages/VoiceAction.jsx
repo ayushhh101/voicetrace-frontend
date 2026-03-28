@@ -49,7 +49,7 @@ const VoiceAction = () => {
         const formData = new FormData();
         formData.append("audio", audioBlob, "recording.m4a"); 
         formData.append("lang", "hindi");
-        formData.append("meta", JSON.stringify({ userId: "vendor_123", timestamp: Date.now() }));
+        formData.append("meta", JSON.stringify({ userId: "69c7ee1bb5546e91df1818eb", timestamp: Date.now() }));
 
         try {
             const response = await fetch("http://localhost:8000/api/speech_msg", {
@@ -96,7 +96,9 @@ const VoiceAction = () => {
                         }
                         
                         if (parsed.stage === 'clarification_needed') {
-                            setAiStatus(parsed.data);
+                            setAiStatus("I heard you, but I'm a bit confused. Check your Home Screen to fix this!");
+                            setTranscript("");
+                            setTimeout(() => navigate('/'), 3000);
                         }
                     } catch (e) {
                         console.error("Parse error", e);
