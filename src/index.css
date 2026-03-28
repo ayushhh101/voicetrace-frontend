@@ -1,4 +1,30 @@
-:root {
+@import "tailwindcss";
+
+/* 1. Global Reset to ensure full-width mobile feel */
+body {
+  margin: 0;
+  padding: 0;
+  display: block; /* Removes the "place-items: center" that was breaking your layout */
+  min-height: 100vh;
+  background-color: #F8FAFC; /* Slate-50 background for the app */
+}
+
+/* 2. Custom Helper for the horizontal scrolling chips */
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+
+
+
+
+/* :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
@@ -65,4 +91,4 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
-}
+} */
