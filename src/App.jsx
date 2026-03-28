@@ -5,6 +5,8 @@ import Home from "./pages/Home";
 import Ledger from "./pages/Ledger"; // Added this
 import Navbar from "./components/Navbar";
 import VoiceAction from "./pages/VoiceAction";
+import Insights from "./pages/Insights";
+import Udhar from "./pages/Udhar";
 
 function App() {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
@@ -54,6 +56,8 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/ledger" element={<Ledger />} />
             <Route path="/voice" element={<VoiceAction />} />
+            <Route path="/insights" element={<Insights />} />
+            <Route path="/udhar" element={<Udhar />} />
             {/* You can add /insights here later */}
           </Routes>
         </main>
