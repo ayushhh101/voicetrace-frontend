@@ -1,27 +1,59 @@
 import React from 'react';
+import { motion } from 'framer-motion';
+import { TrendingUp, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { StatCard } from "./Home";
 
 const Ledger = () => {
   return (
-    <div className="max-w-md mx-auto min-h-screen bg-[#F9FBFC] pb-32">
-      {/* --- Dark Header Section --- */}
-      <header className="bg-[#1A1F2B] p-6 rounded-b-[40px] text-white shadow-2xl">
-        <div className="flex justify-between items-start mb-6">
-          <div>
-            <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Daily Ledger</p>
-            <h1 className="text-2xl font-black mt-1">28 March, Saturday</h1>
+    <div className="max-w-md mx-auto min-h-screen bg-[#F9FBFC] pb-32 font-sans antialiased">
+      
+      {/* --- New High-Impact Dark Header --- */}
+      <header className="bg-[#1A1F2B] p-6 text-white shadow-2xl relative overflow-hidden">
+        <div className="relative z-10">
+          <div className="flex justify-between items-center mb-6">
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }} 
+              animate={{ opacity: 1, x: 0 }}
+            >
+              <h1 className="text-3xl font-black italic tracking-tighter">Sat 28 March</h1>
+            </motion.div>
+            <div className="bg-white/10 p-3 rounded-2xl backdrop-blur-md">
+              <TrendingUp className="text-emerald-400" size={24} />
+            </div>
           </div>
-          <div className="bg-emerald-500/20 px-3 py-1 rounded-full border border-emerald-500/30">
-            <span className="text-[10px] font-bold text-emerald-400 uppercase">75 items</span>
-          </div>
-        </div>
 
-        {/* Top Stats Grid */}
-        <div className="grid grid-cols-4 gap-2">
-          <StatCard label="Sales" value="820" />
-          <StatCard label="Profit" value="420" />
-          <StatCard label="Expense" value="400" />
-          <StatCard label="Waste" value="25" />
+          {/* Profit Visualization Box */}
+          <div className="bg-white/5 p-6 rounded-[32px] border border-white/10 backdrop-blur-sm mb-6">
+            <div className="flex justify-between items-end mb-2">
+              <p className="text-[10px] font-bold text-slate-400 uppercase">Daily Profit</p>
+              <p className="text-2xl font-black text-emerald-400">₹420</p>
+            </div>
+            <div className="h-2 w-full bg-slate-700 rounded-full overflow-hidden flex">
+              <motion.div 
+                initial={{ width: 0 }} 
+                animate={{ width: '65%' }} 
+                className="bg-emerald-500 h-full" 
+              />
+            </div>
+            <div className="flex justify-between mt-3">
+              <div className="flex items-center gap-1">
+                <ArrowUpRight size={12} className="text-emerald-400" />
+                <span className="text-[10px] font-bold tracking-tight">Sales: ₹820</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <ArrowDownRight size={12} className="text-red-400" />
+                <span className="text-[10px] font-bold tracking-tight">Costs: ₹400</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Top Stats Grid (Kept exactly as requested) */}
+          <div className="grid grid-cols-4 gap-2">
+            <StatCard label="Sales" value="820" />
+            <StatCard label="Profit" value="420" />
+            <StatCard label="Expense" value="400" />
+            <StatCard label="Waste" value="25" />
+          </div>
         </div>
       </header>
 
@@ -97,13 +129,6 @@ const Ledger = () => {
 
 /* --- Sub-Components --- */
 
-const StatMini = ({ label, val, color }) => (
-  <div className="bg-white/5 p-2 rounded-xl text-center border border-white/5">
-    <p className={`text-sm font-black ${color}`}>₹{val}</p>
-    <p className="text-[8px] font-bold uppercase opacity-40">{label}</p>
-  </div>
-);
-
 const ProgressItem = ({ icon, label, total, sub, percent, color }) => (
   <div className="flex gap-4 items-center">
     <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-lg">{icon}</div>
@@ -133,7 +158,12 @@ const ExpenseRow = ({ icon, label, val, border = true }) => (
 const Bar = ({ height, label, val, color }) => (
   <div className="flex flex-col items-center gap-2">
     <p className="text-[9px] font-bold text-slate-400">{val}</p>
-    <div className={`${color} w-10 ${height} rounded-t-lg transition-all duration-500`} />
+    <motion.div 
+      initial={{ height: 0 }}
+      animate={{ height: height.replace('h-', '') * 4 }} // Simple conversion for animation
+      className={`${color} w-10 rounded-t-lg transition-all duration-500`} 
+      style={{ height: `${parseInt(height.replace('h-', '')) * 0.25}rem` }}
+    />
     <p className="text-[10px] font-bold text-slate-500">{label}</p>
   </div>
 );
