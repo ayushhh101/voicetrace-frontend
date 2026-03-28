@@ -12,7 +12,7 @@ export const useRecorder = () => {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
 
-      const recorder = new MediaRecorder(stream);
+      const recorder = new MediaRecorder(stream, { mimeType: 'audio/mp4' });
       mediaRecorderRef.current = recorder;
 
       recorder.ondataavailable = (e) => {
