@@ -1,53 +1,48 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import Home from "./pages/Home";
 
 function App() {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const { t, i18n } = useTranslation();
+  const currentLanguage = i18n.resolvedLanguage?.startsWith("hi") ? "hi" : "en";
 
   useEffect(() => {
-    window.addEventListener("beforeinstallprompt", (e) => {
+    const beforeInstallPromptHandler = (e) => {
       e.preventDefault();
       setDeferredPrompt(e);
-    });
+    };
+
+    window.addEventListener("beforeinstallprompt", beforeInstallPromptHandler);
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", beforeInstallPromptHandler);
+    };
   }, []);
 
-  const handleInstall = async () => {
-    if (!deferredPrompt) {
-      alert("Install not available. Use 'Add to Home Screen'");
-      return;
-    }
-
-    deferredPrompt.prompt();
-
-    const { outcome } = await deferredPrompt.userChoice;
-    console.log(outcome);
-
-    setDeferredPrompt(null);
+  const handleLanguageChange = (event) => {
+    i18n.changeLanguage(event.target.value);
   };
 
   return (
     <div className="min-h-screen flex flex-col">
-
       {/* Header */}
-      <header className="bg-black text-white p-4 text-center">
-        VoiceTrace 🎤
-      </header>
+      <header className="bg-black text-white p-4 text-center flex justify-between items-center gap-3">
+        <span>{t("appName")} 🎤</span>
 
-      {/* Install Button */}
-      <div className="flex justify-center mt-4">
-        <button
-          onClick={handleInstall}
-          className="bg-blue-600 text-white px-4 py-2 rounded"
-        >
-          📲 Download App
-        </button>
-      </div>
+        <label className="flex items-center gap-2">
+          <span>{t("language")}</span>
+          <select value={currentLanguage} onChange={handleLanguageChange} className="text-black px-2 py-1 rounded">
+            <option value="en">{t("english")}</option>
+            <option value="hi">{t("hindi")}</option>
+          </select>
+        </label>
+      </header>
 
       {/* Main */}
       <main className="flex-1 flex items-center justify-center">
         <Home />
       </main>
-
     </div>
   );
 }
