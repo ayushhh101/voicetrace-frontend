@@ -1,23 +1,31 @@
 import React from 'react';
-import { StatCard } from './Home'; // Borrowing your StatCard design
+import { motion } from 'framer-motion';
+import { TrendingUp, AlertTriangle, Lightbulb, Zap, ShoppingCart } from 'lucide-react';
+import { StatCard } from './Home';
 
 const Insights = () => {
   return (
     <div className="max-w-md mx-auto min-h-screen bg-[#F8FAFC] pb-32">
       {/* --- Purple Header Section --- */}
-      <header className="bg-[#7C3AED] p-6 rounded-b-[40px] text-white shadow-xl">
-        <div className="mb-6">
-          <p className="text-purple-200 text-[10px] font-bold uppercase tracking-widest">Weekly Report</p>
-          <h1 className="text-2xl font-black mt-1">Your Business</h1>
-        </div>
+      <header className="bg-[#7C3AED] p-6 text-white shadow-2xl relative overflow-hidden">
+        <div className="relative z-10">
+          <div className="flex justify-between items-center mb-6">
+            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
+              <h1 className="text-3xl font-black italic tracking-tighter uppercase">Weekly Report</h1>
+              <p className="text-purple-200 text-xs font-bold uppercase tracking-widest">Business Insights</p>
+            </motion.div>
+            <div className="bg-white/10 p-3 rounded-2xl backdrop-blur-md">
+              <TrendingUp className="text-white" size={24} />
+            </div>
+          </div>
 
-        {/* Top Stats Grid */}
-        <div className="grid grid-cols-3 gap-3">
-          <StatCard label="Avg. Daily" value="740" />
-          <StatCard label="Avg. Profit" value="380" />
-          <div className="bg-white/10 p-3 rounded-2xl border border-white/5 text-center">
-            <p className="text-[9px] font-bold opacity-70 mb-1 uppercase text-white">Waste %</p>
-            <p className="text-lg font-black tracking-tight font-mono text-white">6.2%</p>
+          <div className="grid grid-cols-3 gap-2">
+            <StatCard label="Rozana Sales" value="740" />
+            <StatCard label="Daily Profit" value="380" />
+            <div className="bg-white/10 p-3 rounded-2xl border border-white/10 text-center backdrop-blur-sm">
+              <p className="text-[9px] font-bold opacity-70 mb-1 uppercase text-white">Waste</p>
+              <p className="text-lg font-black tracking-tight text-white">6.2%</p>
+            </div>
           </div>
         </div>
       </header>
