@@ -1,9 +1,40 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import Recorder from "../components/Recorder";
+import axios from "axios"; 
+// import Recorder from "../components/Recorder"; // Assuming you still need this later
 
 export default function Home() {
   const { t } = useTranslation();
+
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const vendorId = "69c7ee1bb5546e91df1818eb";
+
+  useEffect(() => {
+    const fetchData = async () => {
+      console.log("🚀 Effect triggered. Fetching for:", vendorId);
+      try {
+        const res = await axios.get(`http://localhost:5000/api/home/${vendorId}`);
+        console.log("✅ Data Received:", res.data);
+        setData(res.data);
+        setLoading(false);
+      } catch (err) {
+        console.error("❌ Fetch Error:", err.message);
+        setError(err.message);
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [vendorId]);
+
+  if (loading) return (
+    <div className="flex items-center justify-center min-h-screen">
+      <p className="animate-pulse font-bold text-emerald-600">Loading Dashboard...</p>
+    </div>
+  );
+
+  if (error) return <div className="p-10 text-red-500">Error: {error}</div>;
 
   return (
     <div className="max-w-md mx-auto min-h-screen bg-slate-50 pb-28 font-sans">
@@ -12,7 +43,8 @@ export default function Home() {
         <div className="flex justify-between items-start mb-6">
           <div>
             <p className="text-emerald-100/80 text-xs font-bold uppercase tracking-wider">Today's Earnings</p>
-            <h1 className="text-5xl font-black mt-1">₹820</h1>
+            {/* Mapped Earnings */}
+            <h1 className="text-5xl font-black mt-1">₹{data?.stats?.earnings || 0}</h1>
           </div>
           <div className="bg-white/10 px-3 py-1 rounded-full backdrop-blur-md flex items-center gap-2 border border-white/20">
             <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
@@ -20,11 +52,11 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Stat Cards */}
+        {/* Stat Cards Mapped */}
         <div className="grid grid-cols-3 gap-3">
-          <StatCard label="PROFIT" value="420" />
-          <StatCard label="EXPENSES" value="400" />
-          <StatCard label="DEBT" value="150" />
+          <StatCard label="PROFIT" value={data?.stats?.profit || 0} />
+          <StatCard label="EXPENSES" value={data?.stats?.expenses || 0} />
+          <StatCard label="DEBT" value={data?.stats?.debt || 0} />
         </div>
       </header>
 
@@ -38,41 +70,61 @@ export default function Home() {
             <p className="text-slate-400 text-sm font-medium italic">What did you sell today?</p>
         </div>
 
-        {/* Chips Row */}
+        {/* Chips Row Mapped */}
         <div className="flex gap-2 overflow-x-auto no-scrollbar py-1">
-          <SummaryChip icon="☕" label="Chai" count="45" />
-          <SummaryChip icon="🍌" label="Banana" count="30" />
-          <SummaryChip icon="🥜" label="Nuts" count="5" />
-          <div className="bg-red-50 text-red-600 px-4 py-2 rounded-full font-bold text-sm">₹400</div>
+          {data?.inventorySummary?.map((item, index) => (
+            <SummaryChip 
+              key={item.id || index} 
+              icon={item.icon || "📦"} 
+              label={item.label} 
+              count={item.count} 
+            />
+          ))}
         </div>
 
-        {/* Activity Feed */}
+        {/* Activity Feed Mapped */}
         <section>
           <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-4 px-1">Live Activity</h2>
           <div className="space-y-3">
-            <ActivityRow icon="☕" title="5 teas sold" sub="₹50 • 2 mins ago" />
-            <ActivityRow icon="🍌" title="10 bananas sold" sub="₹80 • 15 mins ago" />
-            <ActivityRow icon="💸" title="Transport expenses" sub="₹50 - confirm?" isWarning />
+            {data?.activities?.length > 0 ? (
+              data.activities.map((activity, index) => (
+                <ActivityRow 
+                  key={activity.id || index} 
+                  icon={activity.icon} 
+                  title={activity.title} 
+                  sub={activity.sub} 
+                  isWarning={activity.isWarning} 
+                />
+              ))
+            ) : (
+              <p className="text-center text-sm text-slate-400 italic py-4">No recent activity.</p>
+            )}
           </div>
         </section>
 
-        {/* Waste Alert */}
-        <div className="bg-red-50 border border-red-100 p-5 rounded-[30px] flex items-start gap-4">
-          <div className="bg-white p-3 rounded-2xl shadow-sm">🗑️</div>
-          <div>
-            <h3 className="text-red-800 font-bold text-sm">Waste Alert</h3>
-            <p className="text-red-600 text-sm">5 bananas wasted — <span className="font-bold">₹25 loss</span></p>
-            <p className="text-red-400 text-xs mt-1">8 bananas remaining — sell fast!</p>
+        {/* Waste Alert Mapped (Conditional Render) */}
+        {data?.wasteAlert && data.wasteAlert.item && (
+          <div className="bg-red-50 border border-red-100 p-5 rounded-[30px] flex items-start gap-4">
+            <div className="bg-white p-3 rounded-2xl shadow-sm">🗑️</div>
+            <div>
+              <h3 className="text-red-800 font-bold text-sm">Waste Alert</h3>
+              <p className="text-red-600 text-sm">
+                {data.wasteAlert.quantity} {data.wasteAlert.item} wasted — <span className="font-bold">₹{data.wasteAlert.loss} loss</span>
+              </p>
+              <p className="text-red-400 text-xs mt-1">
+                {data.wasteAlert.remaining > 0 
+                  ? `${data.wasteAlert.remaining} ${data.wasteAlert.item} remaining — sell fast!` 
+                  : "None remaining."}
+              </p>
+            </div>
           </div>
-        </div>
+        )}
       </main>
-
-      
     </div>
   );
 }
 
-/* Internal Components for UI Cleanliness */
+/* Internal Components */
 export const StatCard = ({ label, value }) => (
   <div className="bg-white/10 p-3 rounded-2xl border border-white/5 text-center">
     <p className="text-[9px] font-bold opacity-70 mb-1">{label}</p>
@@ -98,5 +150,3 @@ export const ActivityRow = ({ icon, title, sub, isWarning }) => (
     <button className="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs shadow-inner">▶</button>
   </div>
 );
-
-
