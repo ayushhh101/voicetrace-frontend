@@ -1,9 +1,32 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { motion } from 'framer-motion';
 import { TrendingUp, AlertTriangle, Lightbulb, Zap, ShoppingCart } from 'lucide-react';
 import { StatCard } from './Home';
 
 const Insights = () => {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const vendorId = "69c7ee1bb5546e91df1818eb";
+
+  useEffect(() => {
+    const fetchInsights = async () => {
+      try {
+        const res = await axios.get(`http://localhost:5000/api/home/insights/${vendorId}`);
+        setData(res.data);
+        setLoading(false);
+      } catch (err) {
+        console.error("Insights Fetch Error:", err);
+        setLoading(false);
+      }
+    };
+    fetchInsights();
+  }, [vendorId]);
+
+  if (loading) return <div className="p-10 text-center font-bold text-purple-600 animate-pulse mt-20 italic">Generating Weekly Report...</div>;
+  
+  const insights = data || {};
+
   return (
     <div className="max-w-md mx-auto min-h-screen bg-[#F8FAFC] pb-32">
       {/* --- Purple Header Section --- */}
@@ -11,8 +34,8 @@ const Insights = () => {
         <div className="relative z-10">
           <div className="flex justify-between items-center mb-6">
             <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-              <h1 className="text-3xl font-black italic tracking-tighter uppercase">Weekly Report</h1>
-              <p className="text-purple-200 text-xs font-bold uppercase tracking-widest">Business Insights</p>
+              <h1 className="text-3xl font-black italic tracking-tighter uppercase leading-none">Weekly<br/>Report</h1>
+              <p className="text-purple-200 text-xs font-bold uppercase tracking-widest mt-1">Business Insights</p>
             </motion.div>
             <div className="bg-white/10 p-3 rounded-2xl backdrop-blur-md">
               <TrendingUp className="text-white" size={24} />
@@ -20,76 +43,81 @@ const Insights = () => {
           </div>
 
           <div className="grid grid-cols-3 gap-2">
-            <StatCard label="Rozana Sales" value="740" />
-            <StatCard label="Daily Profit" value="380" />
+            <StatCard label="Rozana Sales" value={insights.avgDailyIncome || "0"} />
+            <StatCard label="Daily Profit" value={insights.avgProfit || "0"} />
             <div className="bg-white/10 p-3 rounded-2xl border border-white/10 text-center backdrop-blur-sm">
               <p className="text-[9px] font-bold opacity-70 mb-1 uppercase text-white">Waste</p>
-              <p className="text-lg font-black tracking-tight text-white">6.2%</p>
+              <p className="text-lg font-black tracking-tight text-white">{insights.wastePercentage || "0"}%</p>
             </div>
           </div>
         </div>
+        <div className="absolute top-[-20px] right-[-20px] w-40 h-40 bg-white/5 rounded-full blur-3xl" />
       </header>
 
       <main className="p-5 space-y-8">
         {/* --- Sales Patterns --- */}
         <section>
-          <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Patterns</h2>
+          <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 px-1">Patterns</h2>
           <div className="space-y-3">
-            <PatternCard 
-              icon="📅" 
-              title="Weekends are best!" 
-              sub="Avg ₹950/day — Sat, Sun" 
-              bgColor="bg-emerald-50" 
-              textColor="text-emerald-700" 
-            />
-            <PatternCard 
-              icon="🌆" 
-              title="Evening time is best!" 
-              sub="5–7 PM earns ₹420 average" 
-              bgColor="bg-orange-50" 
-              textColor="text-orange-700" 
-            />
+            {insights.bestDays?.length > 0 && (
+              <PatternCard 
+                icon="📅" 
+                title={`${insights.bestDays[insights.bestDays.length - 1].day}s are best!`} 
+                sub={`Avg ₹${insights.bestDays[insights.bestDays.length - 1].avgIncome}/day`} 
+                bgColor="bg-emerald-50" 
+                textColor="text-emerald-700" 
+              />
+            )}
+            {insights.bestTimeOfDay?.length > 0 && (
+              <PatternCard 
+                icon="🌆" 
+                title="Peak Business Hours" 
+                sub={insights.bestTimeOfDay[0].time} 
+                bgColor="bg-orange-50" 
+                textColor="text-orange-700" 
+              />
+            )}
           </div>
         </section>
 
         {/* --- Item Performance --- */}
         <section>
-          <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Item Performance</h2>
+          <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 px-1">Item Performance</h2>
           <div className="bg-white p-6 rounded-[32px] shadow-sm space-y-6 border border-slate-50">
-            <PerformanceRow label="Chai" val="3,150" percent="90" tag="Best" tagCol="text-emerald-500 bg-emerald-50" barCol="bg-emerald-500" />
-            <PerformanceRow label="Moong" val="910" percent="60" barCol="bg-orange-400" />
-            <PerformanceRow label="Kela" val="240" percent="25" tag="Worst" tagCol="text-red-500 bg-red-50" barCol="bg-red-400" />
+            {insights.bestItems?.slice(0, 2).map((item, i) => (
+                <PerformanceRow key={i} label={item.item} val={item.revenue} percent="85" tag="Best" tagCol="text-emerald-500 bg-emerald-50" barCol="bg-emerald-500" />
+            ))}
+            {insights.worstItems?.slice(0, 1).map((item, i) => (
+                <PerformanceRow key={i} label={item.item} val={item.waste} percent="30" tag="Worst" tagCol="text-red-500 bg-red-50" barCol="bg-red-400" />
+            ))}
           </div>
         </section>
 
         {/* --- Smart Alerts --- */}
         <section>
-          <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Alerts</h2>
+          <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 px-1">Alerts</h2>
           <div className="space-y-3">
-            <AlertCard 
-              icon="🚨" 
-              title="High Expenses Today" 
-              sub="₹400 vs normal ₹280 — transport is high" 
-              tag="High"
-              color="red"
-            />
-            <AlertCard 
-              icon="⚠️" 
-              title="Banana waste is increasing" 
-              sub="₹125 loss this week — 5 days in a row" 
-              tag="Watch"
-              color="orange"
-            />
+            {insights.anomalies?.map((anom, i) => (
+               <AlertCard 
+                key={i}
+                icon={anom.message.includes('low') ? "🚨" : "⚠️"} 
+                title="Pattern Alert" 
+                sub={anom.message} 
+                tag="Check"
+                color={anom.message.includes('low') ? "red" : "orange"}
+              />
+            ))}
           </div>
         </section>
 
         {/* --- Tomorrow's Tips --- */}
         <section>
-          <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Tips for Tomorrow</h2>
+          <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 px-1">Tips for Tomorrow</h2>
           <div className="space-y-3">
-            <Tip icon="💡" text="Prepare for 65+ teas — Sunday rush expected" bgColor="bg-emerald-50" />
-            <Tip icon="🍌" text="Don't buy more than 10kg bananas — avoid waste" bgColor="bg-orange-50" />
-            <Tip icon="💳" text="₹650 credit pending — ask Ramesh" bgColor="bg-indigo-50" />
+            {insights.suggestions?.slice(0, 3).map((sug, i) => (
+                <Tip key={i} icon="💡" text={sug.message} bgColor={i % 2 === 0 ? "bg-emerald-50" : "bg-indigo-50"} />
+            ))}
+            <Tip icon="💳" text={`₹${insights.totalUdharPending} market credit pending.`} bgColor="bg-rose-50" />
           </div>
         </section>
       </main>
@@ -97,14 +125,14 @@ const Insights = () => {
   );
 };
 
-/* --- UI Components --- */
+/* --- UI Components (Unchanged UI, just fixed mapping) --- */
 
 const PatternCard = ({ icon, title, sub, bgColor, textColor }) => (
   <div className={`${bgColor} p-4 rounded-3xl flex items-center gap-4 border border-black/5`}>
     <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-xl shadow-sm">{icon}</div>
     <div>
-      <h3 className={`font-black text-sm ${textColor}`}>{title}</h3>
-      <p className="text-[11px] text-slate-500 font-medium">{sub}</p>
+      <h3 className={`font-black text-sm ${textColor} uppercase tracking-tight`}>{title}</h3>
+      <p className="text-[11px] text-slate-500 font-bold">{sub}</p>
     </div>
   </div>
 );
@@ -112,7 +140,7 @@ const PatternCard = ({ icon, title, sub, bgColor, textColor }) => (
 const PerformanceRow = ({ label, val, percent, tag, tagCol, barCol }) => (
   <div>
     <div className="flex justify-between items-center mb-2">
-      <span className="text-sm font-bold text-slate-700">{label}</span>
+      <span className="text-sm font-bold text-slate-700 uppercase tracking-tight">{label}</span>
       <div className="flex items-center gap-3">
         <span className="text-sm font-black text-slate-800">₹{val}</span>
         {tag && <span className={`text-[9px] font-black px-2 py-0.5 rounded-full uppercase ${tagCol}`}>{tag}</span>}
@@ -129,7 +157,7 @@ const AlertCard = ({ icon, title, sub, tag, color }) => (
     <div className="flex gap-4">
       <span className="text-xl">{icon}</span>
       <div>
-        <h3 className={`text-${color}-900 font-black text-sm`}>{title}</h3>
+        <h3 className={`text-${color}-900 font-black text-sm uppercase tracking-tight`}>{title}</h3>
         <p className={`text-${color}-700 text-[10px] font-medium mt-0.5`}>{sub}</p>
       </div>
     </div>
@@ -138,7 +166,7 @@ const AlertCard = ({ icon, title, sub, tag, color }) => (
 );
 
 const Tip = ({ icon, text, bgColor }) => (
-  <div className={`${bgColor} p-4 rounded-2xl flex items-center gap-4`}>
+  <div className={`${bgColor} p-4 rounded-2xl flex items-center gap-4 border border-black/5`}>
     <span className="text-lg">{icon}</span>
     <p className="text-xs font-bold text-slate-700 leading-tight">{text}</p>
   </div>
