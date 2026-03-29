@@ -41,7 +41,7 @@ const Navbar = () => {
       <NavItem 
         to="/insights" 
         icon="📊" 
-        label="Insights" 
+        label="Report" 
         active={isActive('/insights')} 
       />
       <NavItem 

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRecorder } from "../hooks/useRecorder";
 import VoiceVisualizer from "../components/VoiceVisualizer";
+import { Calendar } from 'lucide-react';
 
 const VoiceAction = () => {
     const navigate = useNavigate();
@@ -11,6 +12,7 @@ const VoiceAction = () => {
     const [transcript, setTranscript] = useState("");
     const [aiStatus, setAiStatus] = useState("Thinking...");
     const [extractedData, setExtractedData] = useState(null);
+    const VENDOR_ID = "69c7ee1bb5546e91df1818eb";
 
     // Engagement: Rotate "Thinking" messages
     useEffect(() => {
@@ -41,25 +43,34 @@ const VoiceAction = () => {
 
     useEffect(() => {
         if (blob && status === 'processing') {
-            processStream(blob);
+            processParallelTask(blob);
         }
     }, [blob, status]);
 
-    const processStream = async (audioBlob) => {
-        const formData = new FormData();
-        formData.append("audio", audioBlob, "recording.m4a"); 
-        formData.append("lang", "hindi");
-        formData.append("meta", JSON.stringify({ userId: "69c7ee1bb5546e91df1818eb", timestamp: Date.now() }));
+    const processParallelTask = async (audioBlob) => {
+        const agentData = new FormData();
+        agentData.append("audio", audioBlob, "recording.m4a");
+        agentData.append("lang", "hindi");
+        agentData.append("meta", JSON.stringify({ userId: "69c7ee1bb5546e91df1818eb", timestamp: Date.now() }));
+
+        const s3Data = new FormData();
+        s3Data.append("audio", audioBlob, `recording_${Date.now()}.m4a`);
+        s3Data.append("userId", VENDOR_ID);
 
         try {
-            const response = await fetch("http://localhost:8000/api/speech_msg", {
-                method: "POST",
-                body: formData,
-            });
+            const [agentResponse, s3Response] = await Promise.all([
+                fetch("http://localhost:8000/api/speech_msg", { method: "POST", body: agentData }),
+                fetch("http://localhost:5000/api/recordings/upload", { method: "POST", body: s3Data })
+            ]);
 
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            if (!agentResponse.ok) throw new Error("Agent failed");
 
-            const reader = response.body.getReader();
+            // Handle S3 logging in background (optional)
+            const s3Result = await s3Response.json();
+            console.log("✅ S3 Backup complete:", s3Result.url);
+
+            // Process AI Agent Stream
+            const reader = agentResponse.body.getReader();
             const decoder = new TextDecoder();
 
             while (true) {
@@ -78,12 +89,12 @@ const VoiceAction = () => {
                         if (parsed.status === 'fast_text') {
                             setTranscript(parsed.text);
                             setAiStatus("Refining text with AI...");
-                        } 
+                        }
                         // 2. Hook: Replace with Turbo text
                         if (parsed.status === 'accurate_text_ready') {
                             setTranscript(parsed.text);
                             setAiStatus("Extracting business data...");
-                        } 
+                        }
                         // 3. AI Graph Steps
                         else if (parsed.status && !['fast_text', 'accurate_text_ready'].includes(parsed.status)) {
                             setAiStatus(parsed.status);
@@ -94,7 +105,7 @@ const VoiceAction = () => {
                             setExtractedData(parsed.data);
                             setStatus('success');
                         }
-                        
+
                         if (parsed.stage === 'clarification_needed') {
                             setAiStatus("I heard you, but I'm a bit confused. Check your Home Screen to fix this!");
                             setTranscript("");
@@ -114,6 +125,16 @@ const VoiceAction = () => {
 
     return (
         <div className="max-w-md mx-auto min-h-screen bg-[#050505] flex flex-col items-center px-8 pt-10 font-sans">
+            <div className='top-0'>
+
+                <button
+                    onClick={() => navigate('/recordings')}
+                    className="w-full py-4 bg-white/5 hover:bg-white/10 text-white/40 rounded-[24px] font-bold text-xs border border-white/5 active:scale-95 transition-all flex items-center justify-center gap-2"
+                >
+                    <Calendar size={14} />
+                    <span>Voice History</span>
+                </button>
+            </div>
             <div className="relative w-full h-[400px] flex items-center justify-center">
                 <div className="absolute w-40 h-40 bg-white/5 blur-[100px] rounded-full" />
                 <VoiceVisualizer status={status} />
@@ -122,6 +143,7 @@ const VoiceAction = () => {
                         Tap to start speaking
                     </div>
                 )}
+
             </div>
 
             <div className="text-center z-10 -mt-10">
@@ -166,6 +188,7 @@ const VoiceAction = () => {
                         <MicIcon className="w-6 h-6" />
                         <span>Tap to Speak</span>
                     </button>
+
                 )}
                 {status === 'recording' && (
                     <button onClick={handleStop} className="w-full py-6 bg-red-600 text-white rounded-[28px] font-black text-xl shadow-2xl active:scale-95 transition-all flex items-center justify-center gap-4">
