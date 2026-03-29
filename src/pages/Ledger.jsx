@@ -6,6 +6,8 @@ import {
   Pizza, 
   Beef, 
   CupSoda, 
+  Tally4,
+  Spade,
   Hamburger,
   Sandwich,
   Ham, 
@@ -16,7 +18,7 @@ import {
   UtensilsCrossed 
 } from 'lucide-react';
 
-const Ledger = ({ vendorId, selectedDate = "2026-03-27" }) => {
+const Ledger = ({ vendorId, selectedDate = "2026-03-26" }) => {
     const [data, setData] = React.useState(null);
 
     // ADD THIS FETCH LOGIC
@@ -42,6 +44,8 @@ const getSaleIcon = (name) => {
     if (item.includes('burger')) return <Hamburger size={20} className="text-amber-600" />;
     if (item.includes('coke') || item.includes('cola')) return <CupSoda size={20} className="text-red-500" />;
     if (item.includes('sandwich')) return <Sandwich size={20} className="text-yellow-600" />;
+    if (item.includes('momos')) return <Spade size={20} className="text-yellow-600" />;
+     if (item.includes('french fries')) return <Tally4 size={20} className="text-yellow-600" />;
     return <UtensilsCrossed size={20} className="text-slate-400" />;
 };
 
