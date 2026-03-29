@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Pause, Mic, Calendar, HardDrive } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const MyRecordings = () => {
     const [recordings, setRecordings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [playingKey, setPlayingKey] = useState(null); // Track active audio
+    const { t, i18n } = useTranslation();
     const vendorId = "69c7ee1bb5546e91df1818eb";
 
     useEffect(() => {
@@ -27,14 +29,16 @@ const MyRecordings = () => {
         setPlayingKey(playingKey === key ? null : key);
     };
 
-    if (loading) return <div className="p-10 text-center font-bold text-emerald-600 animate-pulse">Fetching Audio Files...</div>;
+    const locale = i18n.resolvedLanguage?.startsWith('hi') ? 'hi-IN' : 'en-IN';
+
+    if (loading) return <div className="p-10 text-center font-bold text-emerald-600 animate-pulse">{t('recordings.loading')}</div>;
 
     return (
         <div className="max-w-md mx-auto min-h-screen bg-slate-50 pb-32 font-sans antialiased">
             <header className="bg-[#0D6D5D] p-8 rounded-b-[40px] shadow-lg text-white relative overflow-hidden">
                 <div className="relative z-10">
-                    <h1 className="text-3xl font-black italic tracking-tighter uppercase">My Voice Notes</h1>
-                    <p className="text-emerald-100/80 text-xs font-bold uppercase tracking-widest mt-1">Your Voice Trail</p>
+                    <h1 className="text-3xl font-black italic tracking-tighter uppercase">{t('recordings.title')}</h1>
+                    <p className="text-emerald-100/80 text-xs font-bold uppercase tracking-widest mt-1">{t('recordings.subtitle')}</p>
                 </div>
                 <div className="absolute top-[-20px] right-[-20px] w-32 h-32 bg-white/10 rounded-full blur-3xl" />
             </header>
@@ -61,10 +65,10 @@ const MyRecordings = () => {
                                             <Mic size={20} />
                                         </div>
                                         <div>
-                                            <h3 className="font-bold text-slate-800 text-sm">Note {recordings.length - index}</h3>
+                                            <h3 className="font-bold text-slate-800 text-sm">{t('recordings.note', { number: recordings.length - index })}</h3>
                                             <div className="flex items-center gap-2 text-[10px] text-slate-400 font-bold uppercase mt-1">
                                                 <Calendar size={10} />
-                                                <span>{new Date(rec.lastModified).toLocaleDateString()}</span>
+                                                <span>{new Date(rec.lastModified).toLocaleDateString(locale)}</span>
                                                 <span className="opacity-30">•</span>
                                                 <HardDrive size={10} />
                                                 <span>{(rec.size / 1024).toFixed(1)} KB</span>
@@ -108,7 +112,7 @@ const MyRecordings = () => {
                     })
                 ) : (
                     <div className="text-center py-20">
-                        <p className="text-slate-400 italic">No recordings found in S3.</p>
+                        <p className="text-slate-400 italic">{t('recordings.noRecordings')}</p>
                     </div>
                 )}
             </main>

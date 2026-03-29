@@ -2,11 +2,13 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { ArrowLeft, TrendingUp, TrendingDown, Info, Calendar } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function NextDayInsights() {
   const navigate = useNavigate();
   const [insights, setInsights] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { t, i18n } = useTranslation();
   const vendorId = "69c7ee1bb5546e91df1818eb"; // Hardcoded for now
 
   useEffect(() => {
@@ -26,10 +28,26 @@ export default function NextDayInsights() {
     fetchInsights();
   }, [vendorId]);
 
+  const translateDbMessage = (rawValue) => {
+    if (typeof rawValue !== "string" || rawValue.trim().length === 0) {
+      return rawValue;
+    }
+
+    const normalizedKey = rawValue
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "_");
+    const key = `nextDayInsights.db.message.${normalizedKey}`;
+
+    return i18n.exists(key) ? t(key) : rawValue;
+  };
+
+  const locale = i18n.resolvedLanguage?.startsWith("hi") ? "hi-IN" : "en-IN";
+
   // Get tomorrow's date for a more realistic UI header
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
-  const dateString = tomorrow.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+  const dateString = tomorrow.toLocaleDateString(locale, { weekday: "long", month: "short", day: "numeric" });
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-sans text-slate-900 pb-20">
@@ -40,11 +58,11 @@ export default function NextDayInsights() {
           <button 
             onClick={() => navigate('/')} 
             className="p-1.5 -ml-1.5 hover:bg-slate-100 rounded-md transition-colors text-slate-600"
-            aria-label="Go back"
+            aria-label={t('nextDayInsights.backAriaLabel')}
           >
             <ArrowLeft size={20} strokeWidth={2.5} />
           </button>
-          <h1 className="text-lg font-bold text-slate-800">Prep Suggestions</h1>
+          <h1 className="text-lg font-bold text-slate-800">{t('nextDayInsights.appBarTitle')}</h1>
         </div>
       </div>
 
@@ -53,7 +71,7 @@ export default function NextDayInsights() {
         {/* Context Header */}
         <div className="mb-6 flex items-start justify-between">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight text-slate-900">Tomorrow's Stock</h2>
+            <h2 className="text-2xl font-bold tracking-tight text-slate-900">{t('nextDayInsights.title')}</h2>
             <div className="flex items-center gap-1.5 text-slate-500 text-sm mt-1 font-medium">
               <Calendar size={14} />
               <span>{dateString}</span>
@@ -82,11 +100,22 @@ export default function NextDayInsights() {
           <div className="space-y-4">
             {insights.map((insight, idx) => {
               const lowerInsight = insight.toLowerCase();
-              const isWarning = lowerInsight.includes("decrease") || lowerInsight.includes("skip") || lowerInsight.includes("reduce") || lowerInsight.includes("unsold") || lowerInsight.includes("waste");
+              const isWarning =
+                lowerInsight.includes("decrease") ||
+                lowerInsight.includes("skip") ||
+                lowerInsight.includes("reduce") ||
+                lowerInsight.includes("unsold") ||
+                lowerInsight.includes("waste") ||
+                lowerInsight.includes("कम") ||
+                lowerInsight.includes("घटा") ||
+                lowerInsight.includes("छोड़") ||
+                lowerInsight.includes("बचा") ||
+                lowerInsight.includes("वेस्ट");
               
               // Safe splitting logic
-              const parts = insight.split('—');
-              const itemAction = parts[0]?.trim() || insight;
+              const localizedInsight = translateDbMessage(insight);
+              const parts = localizedInsight.split('—');
+              const itemAction = parts[0]?.trim() || localizedInsight;
               const reason = parts[1]?.trim() || "";
 
               return (
@@ -133,9 +162,9 @@ export default function NextDayInsights() {
                 <div className="bg-white w-12 h-12 rounded-lg border border-slate-200 flex items-center justify-center mx-auto mb-3 shadow-sm">
                   <Info size={20} className="text-slate-400" />
                 </div>
-                <h3 className="text-slate-700 font-semibold">No data available</h3>
+                <h3 className="text-slate-700 font-semibold">{t('nextDayInsights.emptyTitle')}</h3>
                 <p className="text-slate-500 text-sm mt-1">
-                  We need more sales data to generate tomorrow's prep list.
+                  {t('nextDayInsights.emptyDescription')}
                 </p>
               </div>
             )}

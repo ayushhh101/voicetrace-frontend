@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { TrendingUp, AlertTriangle, Lightbulb, Zap, ShoppingCart } from 'lucide-react';
+import { TrendingUp } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { StatCard } from './Home';
 
 const Insights = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { t, i18n } = useTranslation();
   const vendorId = "69c7ee1bb5546e91df1818eb";
 
   useEffect(() => {
@@ -23,9 +25,28 @@ const Insights = () => {
     fetchInsights();
   }, [vendorId]);
 
-  if (loading) return <div className="p-10 text-center font-bold text-purple-600 animate-pulse mt-20 italic">Generating Weekly Report...</div>;
-  
+  const translateDbValue = (prefix, rawValue) => {
+    if (typeof rawValue !== 'string' || rawValue.trim().length === 0) {
+      return rawValue;
+    }
+
+    const normalizedKey = rawValue
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '_');
+    const lookupKey = `${prefix}.${normalizedKey}`;
+
+    return i18n.exists(lookupKey) ? t(lookupKey) : rawValue;
+  };
+
+  if (loading) {
+    return <div className="p-10 text-center font-bold text-purple-600 animate-pulse mt-20 italic">{t('insights.loading')}</div>;
+  }
+
   const insights = data || {};
+  const bestDayEntry = insights.bestDays?.[insights.bestDays.length - 1];
+  const bestDayLabel = translateDbValue('insights.db.day', bestDayEntry?.day);
+  const bestTimeLabel = translateDbValue('insights.db.timeOfDay', insights.bestTimeOfDay?.[0]?.time);
 
   return (
     <div className="max-w-md mx-auto min-h-screen bg-[#F8FAFC] pb-32">
@@ -34,8 +55,8 @@ const Insights = () => {
         <div className="relative z-10">
           <div className="flex justify-between items-center mb-6">
             <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-              <h1 className="text-3xl font-black italic tracking-tighter uppercase leading-none">Weekly<br/>Report</h1>
-              <p className="text-purple-200 text-xs font-bold uppercase tracking-widest mt-1">Business Insights</p>
+              <h1 className="text-3xl font-black italic tracking-tighter uppercase leading-none">{t('insights.title.line1')}<br/>{t('insights.title.line2')}</h1>
+              <p className="text-purple-200 text-xs font-bold uppercase tracking-widest mt-1">{t('insights.title.subtitle')}</p>
             </motion.div>
             <div className="bg-white/10 p-3 rounded-2xl backdrop-blur-md">
               <TrendingUp className="text-white" size={24} />
@@ -43,11 +64,11 @@ const Insights = () => {
           </div>
 
           <div className="grid grid-cols-3 gap-2">
-            <StatCard label="Rozana Sales" value={insights.avgDailyIncome || "0"} />
-            <StatCard label="Daily Profit" value={insights.avgProfit || "0"} />
+            <StatCard label={t('insights.stats.dailySales')} value={insights.avgDailyIncome || '0'} />
+            <StatCard label={t('insights.stats.dailyProfit')} value={insights.avgProfit || '0'} />
             <div className="bg-white/10 p-3 rounded-2xl border border-white/10 text-center backdrop-blur-sm">
-              <p className="text-[9px] font-bold opacity-70 mb-1 uppercase text-white">Waste</p>
-              <p className="text-lg font-black tracking-tight text-white">{insights.wastePercentage || "0"}%</p>
+              <p className="text-[9px] font-bold opacity-70 mb-1 uppercase text-white">{t('insights.stats.waste')}</p>
+              <p className="text-lg font-black tracking-tight text-white">{insights.wastePercentage || '0'}%</p>
             </div>
           </div>
         </div>
@@ -57,13 +78,13 @@ const Insights = () => {
       <main className="p-5 space-y-8">
         {/* --- Sales Patterns --- */}
         <section>
-          <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 px-1">Patterns</h2>
+          <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 px-1">{t('insights.sections.patterns')}</h2>
           <div className="space-y-3">
             {insights.bestDays?.length > 0 && (
               <PatternCard 
                 icon="📅" 
-                title={`${insights.bestDays[insights.bestDays.length - 1].day}s are best!`} 
-                sub={`Avg ₹${insights.bestDays[insights.bestDays.length - 1].avgIncome}/day`} 
+                title={t('insights.patterns.bestDayTitle', { day: bestDayLabel })}
+                sub={t('insights.patterns.avgPerDay', { amount: bestDayEntry?.avgIncome ?? 0 })}
                 bgColor="bg-emerald-50" 
                 textColor="text-emerald-700" 
               />
@@ -71,8 +92,8 @@ const Insights = () => {
             {insights.bestTimeOfDay?.length > 0 && (
               <PatternCard 
                 icon="🌆" 
-                title="Peak Business Hours" 
-                sub={insights.bestTimeOfDay[0].time} 
+                title={t('insights.patterns.peakHours')} 
+                sub={bestTimeLabel} 
                 bgColor="bg-orange-50" 
                 textColor="text-orange-700" 
               />
@@ -82,28 +103,28 @@ const Insights = () => {
 
         {/* --- Item Performance --- */}
         <section>
-          <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 px-1">Item Performance</h2>
+          <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 px-1">{t('insights.sections.itemPerformance')}</h2>
           <div className="bg-white p-6 rounded-[32px] shadow-sm space-y-6 border border-slate-50">
             {insights.bestItems?.slice(0, 2).map((item, i) => (
-                <PerformanceRow key={i} label={item.item} val={item.revenue} percent="85" tag="Best" tagCol="text-emerald-500 bg-emerald-50" barCol="bg-emerald-500" />
+                <PerformanceRow key={i} label={item.item} val={item.revenue} percent="85" tag={t('insights.performance.best')} tagCol="text-emerald-500 bg-emerald-50" barCol="bg-emerald-500" />
             ))}
             {insights.worstItems?.slice(0, 1).map((item, i) => (
-                <PerformanceRow key={i} label={item.item} val={item.waste} percent="30" tag="Worst" tagCol="text-red-500 bg-red-50" barCol="bg-red-400" />
+                <PerformanceRow key={i} label={item.item} val={item.waste} percent="30" tag={t('insights.performance.worst')} tagCol="text-red-500 bg-red-50" barCol="bg-red-400" />
             ))}
           </div>
         </section>
 
         {/* --- Smart Alerts --- */}
         <section>
-          <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 px-1">Alerts</h2>
+          <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 px-1">{t('insights.sections.alerts')}</h2>
           <div className="space-y-3">
             {insights.anomalies?.map((anom, i) => (
                <AlertCard 
                 key={i}
                 icon={anom.message.includes('low') ? "🚨" : "⚠️"} 
-                title="Pattern Alert" 
-                sub={anom.message} 
-                tag="Check"
+                title={t('insights.alerts.patternAlert')}
+                sub={translateDbValue('insights.db.message', anom.message)}
+                tag={t('insights.alerts.check')}
                 color={anom.message.includes('low') ? "red" : "orange"}
               />
             ))}
@@ -112,12 +133,12 @@ const Insights = () => {
 
         {/* --- Tomorrow's Tips --- */}
         <section>
-          <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 px-1">Tips for Tomorrow</h2>
+          <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 px-1">{t('insights.sections.tipsTomorrow')}</h2>
           <div className="space-y-3">
             {insights.suggestions?.slice(0, 3).map((sug, i) => (
-                <Tip key={i} icon="💡" text={sug.message} bgColor={i % 2 === 0 ? "bg-emerald-50" : "bg-indigo-50"} />
+                <Tip key={i} icon="💡" text={translateDbValue('insights.db.message', sug.message)} bgColor={i % 2 === 0 ? "bg-emerald-50" : "bg-indigo-50"} />
             ))}
-            <Tip icon="💳" text={`₹${insights.totalUdharPending} market credit pending.`} bgColor="bg-rose-50" />
+            <Tip icon="💳" text={t('insights.tips.marketCreditPending', { amount: insights.totalUdharPending || 0 })} bgColor="bg-rose-50" />
           </div>
         </section>
       </main>
