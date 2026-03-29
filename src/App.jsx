@@ -7,6 +7,9 @@ import Navbar from "./components/Navbar";
 import VoiceAction from "./pages/VoiceAction";
 import Insights from "./pages/Insights";
 import Udhar from "./pages/Udhar";
+import NextDayInsights from "./pages/NextDayInsights";
+import WasteInsights from "./pages/WasteInsights";
+import MyRecordings from "./pages/MyRecordings";
 
 function App() {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
@@ -58,6 +61,9 @@ function App() {
             <Route path="/voice" element={<VoiceAction />} />
             <Route path="/insights" element={<Insights />} />
             <Route path="/udhar" element={<Udhar />} />
+            <Route path="/nextday" element={<NextDayInsights/>}/>
+            <Route path="/wasteinsight" element={<WasteInsights/>}/> 
+            <Route path="/recordings" element={<MyRecordings />} />
             {/* You can add /insights here later */}
           </Routes>
         </main>
