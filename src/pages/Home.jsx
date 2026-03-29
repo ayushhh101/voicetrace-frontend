@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios"; 
 import { motion, AnimatePresence } from "framer-motion";
-import { Mic, MessageSquare, ArrowRight, CheckCircle2, X } from "lucide-react";
+import { Mic, MessageSquare, ArrowRight, CheckCircle2, X,TrendingUp,AlertTriangle  } from "lucide-react";
 
 /* --- EXPORTED COMPONENTS --- */
 export const StatCard = ({ label, value }) => (
@@ -193,18 +193,34 @@ export default function Home() {
                 <div className="absolute top-[-20px] right-[-20px] w-32 h-32 bg-white/5 rounded-full blur-3xl pointer-events-none" />
               </motion.div>
             ) : (
-              /* STANDARD VOICE TRIGGER MODE */
               <motion.div 
-                key="voice-area"
+                key="insights-area"
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                onClick={() => navigate('/voice')}
-                className="bg-white rounded-[32px] p-8 shadow-sm border border-slate-100 flex flex-col items-center text-center active:scale-95 transition-all cursor-pointer group"
+                className="grid grid-cols-2 gap-4"
               >
-                <div className="w-20 h-20 bg-emerald-50 rounded-[28px] flex items-center justify-center mb-3 ring-8 ring-emerald-50/50 group-hover:bg-emerald-500 group-hover:text-white transition-colors">
-                  <span className="text-2xl">🎙️</span>
+                {/* Box 1: Stock to Buy */}
+                <div 
+                  onClick={() => navigate('/nextday')}
+                  className="bg-emerald-50 rounded-[32px] p-6 shadow-sm border border-emerald-100 flex flex-col items-center text-center active:scale-95 transition-all cursor-pointer group"
+                >
+                  <div className="w-16 h-16 bg-white rounded-[24px] flex items-center justify-center mb-3 shadow-sm text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white transition-colors">
+                    <TrendingUp size={28} />
+                  </div>
+                  <p className="text-emerald-900 font-black uppercase tracking-tight text-sm leading-tight">Stock<br/>Up</p>
+                  <p className="text-emerald-600/70 text-[10px] italic mt-1 font-bold">Best Sellers</p>
                 </div>
-                <p className="text-slate-800 font-black uppercase tracking-tight">Tap to Record</p>
-                <p className="text-slate-400 text-xs italic mt-1 font-medium">What did you sell today?</p>
+
+                {/* Box 2: Stock to Avoid */}
+                <div 
+                  onClick={() => navigate('/wasteinsight')}
+                  className="bg-red-50 rounded-[32px] p-6 shadow-sm border border-red-100 flex flex-col items-center text-center active:scale-95 transition-all cursor-pointer group"
+                >
+                  <div className="w-16 h-16 bg-white rounded-[24px] flex items-center justify-center mb-3 shadow-sm text-red-500 group-hover:bg-red-500 group-hover:text-white transition-colors">
+                    <AlertTriangle size={28} />
+                  </div>
+                  <p className="text-red-900 font-black uppercase tracking-tight text-sm leading-tight">Watch<br/>Waste</p>
+                  <p className="text-red-600/70 text-[10px] italic mt-1 font-bold">Avoid buying</p>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
