@@ -56,7 +56,7 @@ export default function NextDayInsights() {
       <div className="bg-white border-b border-slate-200 px-4 py-4 sticky top-0 z-10">
         <div className="max-w-md mx-auto flex items-center gap-3">
           <button 
-            onClick={() => navigate('/')} 
+            onClick={() => navigate('/home')} 
             className="p-1.5 -ml-1.5 hover:bg-slate-100 rounded-md transition-colors text-slate-600"
             aria-label={t('nextDayInsights.backAriaLabel')}
           >

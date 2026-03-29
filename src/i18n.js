@@ -8,6 +8,15 @@ const resources = {
       appName: "VoiceTrace",
       downloadApp: "Download App",
       installUnavailable: "Install not available. Use 'Add to Home Screen'",
+      login: {
+        title: "Welcome",
+        subtitle: "Enter phone and OTP to continue",
+        phoneLabel: "Phone Number",
+        phonePlaceholder: "Enter phone number",
+        otpLabel: "OTP",
+        otpPlaceholder: "Enter OTP",
+        continue: "Continue"
+      },
       language: "Language",
       english: "English",
       hindi: "Hindi",
@@ -178,6 +187,15 @@ const resources = {
       appName: "वॉइसट्रेस",
       downloadApp: "ऐप डाउनलोड करें",
       installUnavailable: "इंस्टॉल उपलब्ध नहीं है। 'Add to Home Screen' का उपयोग करें",
+      login: {
+        title: "स्वागत है",
+        subtitle: "आगे बढ़ने के लिए फोन और ओटीपी दर्ज करें",
+        phoneLabel: "फोन नंबर",
+        phonePlaceholder: "फोन नंबर दर्ज करें",
+        otpLabel: "ओटीपी",
+        otpPlaceholder: "ओटीपी दर्ज करें",
+        continue: "जारी रखें"
+      },
       language: "भाषा",
       english: "अंग्रेज़ी",
       hindi: "हिंदी",

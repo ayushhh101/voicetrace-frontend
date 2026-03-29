@@ -12,10 +12,10 @@ const Navbar = () => {
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-2xl border-t border-slate-100 px-6 py-4 flex justify-between items-end max-w-md mx-auto z-50 rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
       <NavItem 
-        to="/" 
+        to="/home" 
         icon={<Home size={22} />}
         label="Home" 
-        active={isActive('/')} 
+        active={isActive('/home')} 
       />
       <NavItem 
         to="/ledger" 

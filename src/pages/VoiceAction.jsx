@@ -110,7 +110,7 @@ const VoiceAction = () => {
                         if (parsed.stage === 'clarification_needed') {
                             setAiStatus(t('voiceAction.processingMessages.clarificationNeeded'));
                             setTranscript("");
-                            setTimeout(() => navigate('/'), 3000);
+                            setTimeout(() => navigate('/home'), 3000);
                         }
                     } catch (e) {
                         console.error("Parse error", e);
@@ -206,7 +206,7 @@ const VoiceAction = () => {
                 {status === 'success' && (
                     <div className="flex gap-3">
                         <button onClick={() => setStatus('idle')} className="flex-1 py-5 bg-white/10 text-white rounded-2xl font-bold">{t('voiceAction.cta.new')}</button>
-                        <button onClick={() => navigate('/')} className="flex-[2] py-5 bg-[#10B981] text-white rounded-2xl font-black shadow-lg">{t('voiceAction.cta.looksGood')}</button>
+                        <button onClick={() => navigate('/home')} className="flex-[2] py-5 bg-[#10B981] text-white rounded-2xl font-black shadow-lg">{t('voiceAction.cta.looksGood')}</button>
                     </div>
                 )}
             </div>
