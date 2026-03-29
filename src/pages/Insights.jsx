@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { TrendingUp } from 'lucide-react';
+import { TrendingUp, Download } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import StatCard from "../components/StatCard";
 
 const Insights = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isDownloading, setIsDownloading] = useState(false);
   const { t, i18n } = useTranslation();
   const vendorId = "69c7ee1bb5546e91df1818eb";
 
@@ -47,6 +48,40 @@ const Insights = () => {
   const bestDayEntry = insights.bestDays?.[insights.bestDays.length - 1];
   const bestDayLabel = translateDbValue('insights.db.day', bestDayEntry?.day);
   const bestTimeLabel = translateDbValue('insights.db.timeOfDay', insights.bestTimeOfDay?.[0]?.time);
+
+  
+
+  const handleDownloadReport = async () => {
+    setIsDownloading(true);
+    try {
+      // Calculate weekStart (e.g., 6 days ago + today = 7 days)
+      const d = new Date();
+      d.setDate(d.getDate() - 6);
+      const weekStart = d.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+
+      const response = await axios.get(`http://localhost:5000/api/daily-records/weekly-summary/pdf`, {
+        params: { vendorId, weekStart },
+        responseType: 'blob', // Crucial for handling PDF data
+      });
+
+      // Create a blob URL and trigger download
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `weekly-summary-${weekStart}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      
+      // Cleanup
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Failed to download PDF report:", err);
+      alert(t('insights.alerts.downloadFailed') || 'Failed to download report. Please try again.');
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   return (
     <div className="max-w-md mx-auto min-h-screen bg-[#F8FAFC] pb-32">
@@ -141,6 +176,25 @@ const Insights = () => {
             <Tip icon="💳" text={t('insights.tips.marketCreditPending', { amount: insights.totalUdharPending || 0 })} bgColor="bg-rose-50" />
           </div>
         </section>
+
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={handleDownloadReport}
+          disabled={isDownloading}
+          className={`w-full mt-8 p-4 rounded-2xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 shadow-lg transition-all ${
+            isDownloading 
+              ? 'bg-slate-200 text-slate-500 cursor-not-allowed' 
+              : 'bg-[#7C3AED] text-white hover:bg-purple-700 hover:shadow-purple-500/30'
+          }`}
+        >
+          {isDownloading ? (
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-slate-500"></div>
+          ) : (
+            <Download size={20} />
+          )}
+          {isDownloading ? t('insights.buttons.downloading') || 'Generating...' : t('Download Report') || 'Download Weekly Report'}
+        </motion.button>
       </main>
     </div>
   );
