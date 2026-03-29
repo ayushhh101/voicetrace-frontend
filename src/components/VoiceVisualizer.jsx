@@ -100,27 +100,6 @@ const ParticleSphere = ({ status, volume = 0 }) => {
     );
 };
 
-// const VoiceVisualizer = ({ status }) => {
-//   // Mock volume logic: in a real app, pass actual mic stream frequency here
-//   const [volume, setVolume] = React.useState(0);
-
-//   React.useEffect(() => {
-//     if (status === 'recording') {
-//       const interval = setInterval(() => setVolume(Math.random() * 0.3), 100);
-//       return () => clearInterval(interval);
-//     } else {
-//       setVolume(0);
-//     }
-//   }, [status]);
-
-//   return (
-//     <div className="w-full h-96 flex justify-center items-center overflow-hidden">
-//       <Canvas camera={{ position: [0, 0, 4], fov: 45 }}>
-//         <ParticleSphere status={status} volume={volume} />
-//       </Canvas>
-//     </div>
-//   );
-// };
 
 
 const VoiceVisualizer = ({ status }) => {

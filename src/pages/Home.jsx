@@ -1,6 +1,8 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import Recorder from "../components/Recorder";
+import StatCard from "../components/StatCard";
+import { motion } from "framer-motion";
 
 export default function Home() {
   const { t } = useTranslation();
@@ -21,21 +23,34 @@ export default function Home() {
         </div>
 
         {/* Stat Cards */}
-        <div className="grid grid-cols-3 gap-3">
-          <StatCard label="PROFIT" value="420" />
-          <StatCard label="EXPENSES" value="400" />
-          <StatCard label="DEBT" value="150" />
-        </div>
+        {/* Stat Cards Grid in Home.js */}
+        
+        <motion.div 
+  initial={{ scale: 0.9, opacity: 0 }}
+  animate={{ scale: 1, opacity: 1 }}
+  transition={{ 
+    type: "spring", 
+    stiffness: 260, 
+    damping: 20,
+    delay: 0.1 
+  }}
+  className="grid grid-cols-3 gap-3"
+>
+          {/* The new component handles the 3D tilt and holographic shine! */}
+          <StatCard label="PROFIT" value="420" color="emerald" />
+          <StatCard label="EXPENSES" value="400" color="blue" />
+          <StatCard label="DEBT" value="150" color="red" />
+        </motion.div>
       </header>
 
       {/* --- Main Content --- */}
       <main className="p-4 space-y-6">
         {/* Micro-Interaction/Search Bar Area */}
         <div className="bg-white rounded-[32px] p-6 shadow-sm border border-slate-100 flex flex-col items-center text-center">
-            <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mb-3 ring-8 ring-emerald-50/50">
-                <span className="text-2xl">🎙️</span>
-            </div>
-            <p className="text-slate-400 text-sm font-medium italic">What did you sell today?</p>
+          <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mb-3 ring-8 ring-emerald-50/50">
+            <span className="text-2xl">🎙️</span>
+          </div>
+          <p className="text-slate-400 text-sm font-medium italic">What did you sell today?</p>
         </div>
 
         {/* Chips Row */}
@@ -67,18 +82,13 @@ export default function Home() {
         </div>
       </main>
 
-      
+
     </div>
   );
 }
 
 /* Internal Components for UI Cleanliness */
-export const StatCard = ({ label, value }) => (
-  <div className="bg-white/10 p-3 rounded-2xl border border-white/5 text-center">
-    <p className="text-[9px] font-bold opacity-70 mb-1">{label}</p>
-    <p className="text-lg font-black tracking-tight font-mono">₹{value}</p>
-  </div>
-);
+
 
 export const SummaryChip = ({ icon, label, count }) => (
   <div className="bg-amber-50 text-amber-900 px-4 py-2 rounded-full flex items-center gap-2 text-sm font-bold shadow-sm border border-amber-100 whitespace-nowrap">

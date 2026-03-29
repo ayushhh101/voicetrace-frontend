@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { Home, ReceiptText, BarChart3, CreditCard, Mic } from 'lucide-react';
 
 
 const Navbar = () => {
@@ -12,14 +13,14 @@ const Navbar = () => {
     <nav className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-2xl border-t border-slate-100 px-6 py-4 flex justify-between items-end max-w-md mx-auto z-50 rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
       <NavItem 
         to="/" 
-        icon="🏠" 
-        label="Ghar" 
+        icon={<Home size={22} />}
+        label="Home" 
         active={isActive('/')} 
       />
       <NavItem 
         to="/ledger" 
-        icon="📋" 
-        label="Hisaab" 
+        icon={<ReceiptText size={22} />}
+        label="Transactions" 
         active={isActive('/ledger')} 
       />
       
@@ -40,14 +41,14 @@ const Navbar = () => {
 
       <NavItem 
         to="/insights" 
-        icon="📊" 
+       icon={<BarChart3 size={22} />}
         label="Insights" 
         active={isActive('/insights')} 
       />
       <NavItem 
         to="/udhar" 
-        icon="💳" 
-        label="Udhar" 
+        icon={<CreditCard size={22} />}
+        label="Debt" 
         active={isActive('/udhar')} 
       />
     </nav>
@@ -59,10 +60,12 @@ const NavItem = ({ to, icon, label, active }) => (
   <Link 
     to={to} 
     className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${
-      active ? 'text-emerald-600 scale-110 font-bold' : 'text-slate-300 hover:text-slate-400'
+      active ? 'text-emerald-600 scale-105' : 'text-emerald-900/30 hover:text-emerald-900/50'
     }`}
   >
-    <span className="text-xl">{icon}</span>
+    <div className={active ? 'bg-emerald-100/50 p-1.5 rounded-xl' : 'p-1.5'}>
+        {icon}
+    </div>
     <span className="text-[10px] font-black uppercase tracking-tighter">
       {label}
     </span>

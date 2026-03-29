@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { TrendingUp, AlertTriangle, Lightbulb, Zap, ShoppingCart } from 'lucide-react';
-import { StatCard } from './Home';
+import StatCard from "../components/StatCard";
 
 const Insights = () => {
   return (
