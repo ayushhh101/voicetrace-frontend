@@ -29,6 +29,26 @@ const resources = {
         uploadedUrl: "Uploaded URL",
         detectedText: "Detected Text",
         noDetectedText: "No transcript text returned by server."
+      },
+      udhar: {
+        title: "Udhar List",
+        subtitle: "Money to Collect",
+        stats: {
+          totalPending: "Total Pending",
+          collectedToday: "Collected Today",
+          people: "People"
+        },
+        voiceHint: 'Say "Ramesh paid 50 rupees" to update',
+        peopleList: "People List",
+        pending: "Pending",
+        cleared: "Cleared",
+        db: {
+          time: {
+            today: "Today",
+            one_day_ago: "1 day ago",
+            three_days_ago: "3 days ago"
+          }
+        }
       }
     }
   },
@@ -58,6 +78,26 @@ const resources = {
         uploadedUrl: "अपलोड किया गया URL",
         detectedText: "पहचाना गया टेक्स्ट",
         noDetectedText: "सर्वर से ट्रांसक्रिप्ट टेक्स्ट नहीं मिला।"
+      },
+      udhar: {
+        title: "उधार सूची",
+        subtitle: "लेने वाले पैसे",
+        stats: {
+          totalPending: "कुल बकाया",
+          collectedToday: "आज मिला",
+          people: "लोग"
+        },
+        voiceHint: 'अपडेट के लिए कहें "रमेश ने 50 रुपये दिए"',
+        peopleList: "लोगों की सूची",
+        pending: "बकाया",
+        cleared: "चुकता",
+        db: {
+          time: {
+            today: "आज",
+            one_day_ago: "1 दिन पहले",
+            three_days_ago: "3 दिन पहले"
+          }
+        }
       }
     }
   }
