@@ -1,16 +1,22 @@
-import React, { useState, useEffect } from "react";
+import  { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios"; 
 import { motion, AnimatePresence } from "framer-motion";
 import { Mic, MessageSquare, ArrowRight, CheckCircle2, X,TrendingUp,AlertTriangle  } from "lucide-react";
+import React from "react";
+import { useTranslation } from "react-i18next";
+import Recorder from "../components/Recorder";
+import StatCard from "../components/StatCard";
+
+
 
 /* --- EXPORTED COMPONENTS --- */
-export const StatCard = ({ label, value }) => (
-  <div className="bg-white/10 p-3 rounded-2xl border border-white/5 text-center">
-    <p className="text-[9px] font-bold opacity-70 mb-1 uppercase tracking-tighter">{label}</p>
-    <p className="text-lg font-black tracking-tight font-mono">₹{value}</p>
-  </div>
-);
+// export const StatCard = ({ label, value }) => (
+//   <div className="bg-white/10 p-3 rounded-2xl border border-white/5 text-center">
+//     <p className="text-[9px] font-bold opacity-70 mb-1 uppercase tracking-tighter">{label}</p>
+//     <p className="text-lg font-black tracking-tight font-mono">₹{value}</p>
+//   </div>
+// );
 
 export const SummaryChip = ({ icon, label, count }) => (
   <div className="bg-amber-50 text-amber-900 px-4 py-2 rounded-full flex items-center gap-2 text-sm font-bold border border-amber-100 whitespace-nowrap">
@@ -34,11 +40,6 @@ export const ActivityRow = ({ icon, title, sub, isWarning }) => (
 );
 
 /* --- MAIN HOME COMPONENT --- */
-import React from "react";
-import { useTranslation } from "react-i18next";
-import Recorder from "../components/Recorder";
-import StatCard from "../components/StatCard";
-import { motion } from "framer-motion";
 
 export default function Home() {
   const navigate = useNavigate();
